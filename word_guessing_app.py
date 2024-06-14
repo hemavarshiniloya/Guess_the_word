@@ -27,7 +27,7 @@ class WordGuessingApp:
     def guess_letter(self, guess):
         if guess == st.session_state.game_state['word']:
             st.session_state.game_state['score'] += 10
-            st.success(f"Congratulations! You've guessed the word '{st.session_state.game_state['word']}'. Your final score is {st.session_state.game_state['score']}.")
+            st.success(f"Congratulations!. Your final score is {st.session_state.game_state['score']}.")
             self.show_word()
             self.reset_game()
         elif len(guess) == 1 and guess.isalpha():
