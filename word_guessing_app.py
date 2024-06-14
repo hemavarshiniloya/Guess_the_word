@@ -8,7 +8,7 @@ class WordGuessingApp:
         self.master.title("Word Guessing Game")
         self.master.configure(bg="lightblue")  # Set background color to light blue
 
-        self.words = ["Chiten", "nooter", "program", "gaming", "Zyzzyx", "Quirky", "Gizmoz", "Xyloid", "Jibber", "Krabby", "Zephyr", "Jigsaw", "Xanadu", "Glitch"]
+        self.words = ["Chiten", "nooter", "program", "gaming", "Zyzzyx", "Quirky", "Gizmoz", "Xyloid", "Jibber", "Krabby", "Zephyr", "Jigsaw", "Xanadu", "Glitch", "sujeto","ostrea", "correa", "dinero", "pulgar", "moneda"]
         self.reset_game()
         self.create_widgets()
 
@@ -73,7 +73,7 @@ class WordGuessingApp:
                     self.update_display()
                     self.show_message(f"Oops! '{guess}' is not in the word.")
                     if self.attempts_left == 0:
-                        self.show_message(f"Game over! The word was '{self.word}'. Your final score is {self.score}.")
+                        self.show_message(f"Game over!. Your final score is {self.score}.")
                         self.quit_game()
         else:
             self.show_message("Please enter a single letter or the entire word.")
