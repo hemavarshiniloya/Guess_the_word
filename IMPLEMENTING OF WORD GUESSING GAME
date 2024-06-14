@@ -1,0 +1,13 @@
+   IMPLEMENTING OF WORD GUESSING GAME
+The steps to run the application seem to be as follows:
+1.	Navigate to the directory containing the Python file word_guessing_app.py using the command prompt.
+2.	Run the command streamlit run word_guessing_app.py to start the Streamlit application.
+3.	The command prompt will display the local and network URLs where the application can be accessed.
+4.	Open the provided local URL (e.g., http://localhost:8501) in a web browser to access the word guessing game interface.
+Commond to run:
+cd "C:\Users\hemav\OneDrive\Documents\Guessing_the_word"
+streamlit run word_guessing_app.py
+You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.92.77:8501
