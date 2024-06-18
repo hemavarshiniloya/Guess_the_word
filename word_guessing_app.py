@@ -49,7 +49,7 @@ class WordGuessingApp:
                     st.session_state.game_state['attempts_left'] -= 1
                     st.error(f"Oops! '{guess}' is not in the word.")
                     if st.session_state.game_state['attempts_left'] == 0:
-                        st.error(f"Game over! The word was '{st.session_state.game_state['word']}'. Your final score is {st.session_state.game_state['score']}.")
+                        st.error(f"Game over!. Your final score is {st.session_state.game_state['score']}.")
                         self.show_word()
                         self.reset_game()
         else:
