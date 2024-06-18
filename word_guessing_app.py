@@ -42,7 +42,7 @@ class WordGuessingApp:
                             st.session_state.game_state['revealed_letters'][i] = guess
                     st.success(f"Good guess! '{guess}' is in the word.")
                     if "_" not in st.session_state.game_state['revealed_letters']:
-                        st.success(f"Congratulations! You've guessed the word '{st.session_state.game_state['word']}'. Your final score is {st.session_state.game_state['score']}.")
+                        st.success(f"Congratulations! . Your final score is {st.session_state.game_state['score']}.")
                         self.show_word()
                         self.reset_game()
                 else:
