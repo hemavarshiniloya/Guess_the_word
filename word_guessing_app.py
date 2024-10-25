@@ -26,9 +26,13 @@ class WordGuessingApp:
             "pulgar": ("Thumb (Spanish: pulgar)", "The thumb is an important finger for gripping. (Spanish: El pulgar es un dedo importante para agarrar.)"),
             "moneda": ("Coin (Spanish: moneda)", "I found an old coin on the ground. (Spanish: Encontré una moneda antigua en el suelo.)")
         }
-        if 'game_state' not in st.session_state:
-            self.reset_game()
+        self.setup_game()
 
+    def setup_game(self):
+        if 'game_state' not in st.session_state:
+            st.session_state['leaderboard'] = []
+            self.reset_game()
+        
     def reset_game(self):
         st.session_state.game_state = {
             'word': random.choice(self.words).lower(),
@@ -39,68 +43,91 @@ class WordGuessingApp:
             'attempts_left': random.randint(8, 10),
             'score': 0
         }
-        st.session_state.game_state['hint_index'] = random.randint(0, len(st.session_state.game_state['word']) - 1)
-        st.session_state.game_state['hint_letter'] = st.session_state.game_state['word'][st.session_state.game_state['hint_index']]
+        word = st.session_state.game_state['word']
+        st.session_state.game_state['hint_index'] = random.randint(0, len(word) - 1)
+        st.session_state.game_state['hint_letter'] = word[st.session_state.game_state['hint_index']]
         st.session_state.game_state['revealed_letters'] = [
             '_' if i != st.session_state.game_state['hint_index'] else st.session_state.game_state['hint_letter'] 
-            for i in range(len(st.session_state.game_state['word']))
+            for i in range(len(word))
         ]
 
     def guess_letter(self, guess):
-        if guess == st.session_state.game_state['word']:
-            st.session_state.game_state['score'] += 10
-            st.success(f"Congratulations! You've guessed the word. Your final score is {st.session_state.game_state['score']}.")
-            self.show_word()
-            self.show_meaning(st.session_state.game_state['word'])
-            self.reset_game()
+        state = st.session_state.game_state
+        if guess == state['word']:
+            state['score'] += 10
+            self.game_won()
         elif len(guess) == 1 and guess.isalpha():
-            if guess in st.session_state.game_state['guessed_letters']:
-                st.warning("You've already guessed that letter.")
+            if guess in state['guessed_letters']:
+                st.warning("🚨 You've already guessed that letter.")
             else:
-                st.session_state.game_state['guessed_letters'].add(guess)
-                if guess in st.session_state.game_state['word']:
-                    st.session_state.game_state['score'] += 1
-                    for i in range(len(st.session_state.game_state['word'])):
-                        if st.session_state.game_state['word'][i] == guess:
-                            st.session_state.game_state['revealed_letters'][i] = guess
-                    st.success(f"Good guess! '{guess}' is in the word.")
-                    if "_" not in st.session_state.game_state['revealed_letters']:
-                        st.success(f"Congratulations! You've revealed the word. Your final score is {st.session_state.game_state['score']}.")
-                        self.show_word()
-                        self.show_meaning(st.session_state.game_state['word'])
-                        self.reset_game()
+                state['guessed_letters'].add(guess)
+                if guess in state['word']:
+                    state['score'] += 1
+                    for i, letter in enumerate(state['word']):
+                        if letter == guess:
+                            state['revealed_letters'][i] = guess
+                    st.success(f"🎉 Good guess! '{guess}' is in the word.")
+                    if "_" not in state['revealed_letters']:
+                        self.game_won()
                 else:
-                    st.session_state.game_state['attempts_left'] -= 1
-                    st.error(f"Oops! '{guess}' is not in the word.")
-                    if st.session_state.game_state['attempts_left'] == 0:
-                        st.error(f"Game over!. Your final score is {st.session_state.game_state['score']}.")
-                        self.show_word()
-                        self.show_meaning(st.session_state.game_state['word'])
-                        self.reset_game()
+                    state['attempts_left'] -= 1
+                    if state['attempts_left'] <= 2:
+                        self.show_hint()
+                    if state['attempts_left'] == 0:
+                        self.game_lost()
+                    else:
+                        st.error(f"❌ Oops! '{guess}' is not in the word. Attempts left: {state['attempts_left']}")
         else:
-            st.warning("Please enter a single letter or the entire word.")
+            st.warning("⚠️ Please enter a single letter or the entire word.")
 
-    def show_word(self):
-        st.info(f"The word was: {st.session_state.game_state['word']}")
+    def game_won(self):
+        st.success(f"🏆 Congratulations! You've guessed the word '{st.session_state.game_state['word']}'. Your score is {st.session_state.game_state['score']}.")
+        self.show_meaning(st.session_state.game_state['word'])
+        self.update_leaderboard()
+        self.reset_game()
+
+    def game_lost(self):
+        st.error(f"💔 Game over! The word was '{st.session_state.game_state['word']}'. Final score: {st.session_state.game_state['score']}.")
+        self.show_meaning(st.session_state.game_state['word'])
+        self.update_leaderboard()
+        self.reset_game()
+
+    def show_hint(self):
+        hidden_indices = [i for i, letter in enumerate(st.session_state.game_state['revealed_letters']) if letter == '_']
+        if hidden_indices:
+            reveal_index = random.choice(hidden_indices)
+            st.session_state.game_state['revealed_letters'][reveal_index] = st.session_state.game_state['word'][reveal_index]
+            st.info(f"💡 Hint: Another letter revealed - {st.session_state.game_state['word'][reveal_index]}")
 
     def show_meaning(self, word):
         meaning, example = self.definitions.get(word, ("Meaning not found.", "No example available."))
-        st.info(f"Meaning: {meaning}\nExample: {example}")
+        st.info(f"📖 Meaning: {meaning}\n💬 Example: {example}")
+
+    def update_leaderboard(self):
+        leaderboard = st.session_state['leaderboard']
+        leaderboard.append((st.session_state.game_state['score'], st.session_state.game_state['word']))
+        leaderboard.sort(reverse=True, key=lambda x: x[0])
+        st.session_state['leaderboard'] = leaderboard[:5]  # Keep top 5 scores
+
+    def display_leaderboard(self):
+        st.subheader("🏅 Leaderboard")
+        for i, (score, word) in enumerate(st.session_state['leaderboard'], 1):
+            st.text(f"{i}. Word: {word} - Score: {score}")
 
     def display(self):
-        st.title("Word Guessing Game")
-        st.text(f"Word: {' '.join(st.session_state.game_state['revealed_letters'])}")
-        st.text(f"Attempts left: {st.session_state.game_state['attempts_left']}")
-        st.text(f"Score: {st.session_state.game_state['score']}")
+        st.title("🎲 Word Guessing Game")
+        st.text(f"🔠 Word: {' '.join(st.session_state.game_state['revealed_letters'])}")
+        st.text(f"💥 Attempts left: {st.session_state.game_state['attempts_left']}")
+        st.text(f"⭐ Score: {st.session_state.game_state['score']}")
 
-        guess = st.text_input("Enter a letter or the whole word:")
-        if st.button("Guess"):
-            self.guess_letter(guess)
+        guess = st.text_input("🔍 Enter a letter or the whole word:")
+        if st.button("🎯 Guess"):
+            self.guess_letter(guess.lower())
 
-        if st.button("Show Score"):
-            st.info(f"Your current score is: {st.session_state.game_state['score']}")
+        if st.button("🏆 Show Leaderboard"):
+            self.display_leaderboard()
 
-        if st.button("Reset Game"):
+        if st.button("🔄 Reset Game"):
             self.reset_game()
 
 if __name__ == "__main__":
